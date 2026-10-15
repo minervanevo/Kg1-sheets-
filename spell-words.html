@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Splash - Spell words</title>
+<style>
+:root{--bg:#fff7e6;--card:#fff;--ink:#2b2b2b;--mut:#7a7a7a;--line:#e6dcc3;--ok:#2e9e5b;--bad:#e5484d;--sel:#ffe08a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1b17;--card:#2a2722;--ink:#f3efe6;--mut:#b5ad9d;--line:#4a443b;--ok:#4cc784;--bad:#ff6b70;--sel:#6b5316;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1d1b17;--card:#2a2722;--ink:#f3efe6;--mut:#b5ad9d;--line:#4a443b;--ok:#4cc784;--bad:#ff6b70;--sel:#6b5316;color-scheme:dark}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Chalkboard SE","Comic Sans MS",system-ui,sans-serif}
+main{max-width:480px;margin:0 auto;padding:14px 12px 40px}
+h1{font-size:28px;text-align:center;margin:6px 0 14px}
+h2{font-size:20px;margin:0 0 4px}
+p{margin:0 0 10px;color:var(--mut);font-size:15px}
+button{font-family:inherit;color:var(--ink);cursor:pointer}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{flex:1;border:3px solid transparent;border-radius:14px;padding:12px 4px;font-size:18px;font-weight:700;opacity:.65}
+.tab.on{opacity:1;border-color:var(--ink)}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px;margin-bottom:16px}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mg>div{display:flex;flex-direction:column;gap:8px}
+.pic,.wd{height:72px;border:2px solid var(--line);border-radius:14px;background:var(--card)}
+.pic{font-size:32px;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+.wd{font-size:22px;font-weight:700}
+.pic.sel{background:var(--sel);border-color:var(--ink)}
+.pic.ok,.wd.ok{border-color:var(--ok);opacity:.55}
+.wd.bad{border-color:var(--bad);animation:sh .4s}
+.dot{display:inline-block;width:40px;height:40px;border-radius:50%}
+.row{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px;border:2px solid var(--line);border-radius:16px;margin:10px 0}
+.row.ok{border-color:var(--ok)}
+.row.bad{border-color:var(--bad);animation:sh .4s}
+.pic2{font-size:54px;line-height:1;min-height:60px;display:flex;align-items:center}
+.pic2 .dot{width:56px;height:56px}
+.slots,.tiles{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.slot{width:42px;height:48px;border:0;border-bottom:3px solid var(--mut);background:transparent;font-size:28px;font-weight:700}
+.t{width:46px;height:50px;border-radius:12px;border:2px solid var(--line);background:var(--sel);font-size:26px;font-weight:700}
+.t:disabled{opacity:.2;cursor:default}
+.inp{width:80%;max-width:260px;font-size:28px;text-align:center;border:0;border-bottom:3px solid var(--mut);background:transparent;color:var(--ink);font-family:inherit;padding:4px;outline:none}
+.inp:focus{border-color:var(--ink)}
+.row.ok .inp{border-color:var(--ok);color:var(--ok)}
+.chk{font-size:24px}
+.win{text-align:center;font-size:22px;font-weight:700;margin-top:12px;color:var(--ok)}
+.reset{display:block;margin:0 auto;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:12px 22px;font-size:18px;font-weight:700}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head>
+<body><main><h1>Splash: Spell</h1><div id="app"></div></main>
+<script>
+const GL='<svg viewBox="0 0 40 56" width="38" height="50"><rect x="12" y="2" width="16" height="10" rx="3" fill="#f59e0b"/><path d="M10 14h20l4 10v26a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V24z" fill="#fff" stroke="#6b7280" stroke-width="2"/><rect x="8" y="28" width="24" height="14" rx="3" fill="#3b82f6"/></svg>';
+const dot=c=>`<i class="dot" style="background:${c}"></i>`;
+const D={
+Spell:{c:['#FAC775','#412402'],w:[['Happy','😊'],['Sad','😢'],['Win','🏆']]}
+};
+const sh=a=>[...a].sort(()=>Math.random()-.5);
+const der=n=>{let a;do{a=sh([...Array(n).keys()])}while(n>1&&a.some((v,i)=>v===i));return a};
+const ST={};let cur='Spell';
+function init(s){const W=D[s].w;ST[s]={o:der(W.length),sel:null,done:{},bad:null,sc:{},scOk:{},scBad:{},wr:{},wrOk:{},
+L:W.map(([w])=>{w=w.toLowerCase();let a,t=0;do{a=sh([...w]);t++}while(a.join('')===w&&t<30);return a})}}
+Object.keys(D).forEach(init);
+function go(s){cur=s;render()}
+function pick(i){const s=ST[cur];if(s.done[i])return;s.sel=i;render()}
+function ans(j){const s=ST[cur];if(s.sel===null||s.done[s.o[j]])return;
+if(s.o[j]===s.sel){s.done[s.sel]=1;s.sel=null}else{s.bad=j;setTimeout(()=>{s.bad=null;render()},500)}render()}
+function tile(i,k){const s=ST[cur],w=D[cur].w[i][0].toLowerCase(),c=s.sc[i]||(s.sc[i]=[]);
+if(s.scOk[i]||s.scBad[i]||c.includes(k)||c.length>=w.length)return;c.push(k);
+if(c.length===w.length){if(c.map(x=>s.L[i][x]).join('')===w)s.scOk[i]=1;else{s.scBad[i]=1;setTimeout(()=>{s.sc[i]=[];s.scBad[i]=0;render()},700)}}render()}
+function slot(i,k){const s=ST[cur];if(s.scOk[i]||s.scBad[i])return;s.sc[i]=(s.sc[i]||[]).slice(0,k);render()}
+function wr(i,v){const s=ST[cur];s.wr[i]=v;if(v.trim().toLowerCase()===D[cur].w[i][0].toLowerCase()){s.wrOk[i]=1;render()}}
+function reset(){init(cur);render()}
+function render(){
+const s=ST[cur],W=D[cur].w,n=W.length,md=Object.keys(s.done).length;
+let h='<div class="tabs">'+Object.keys(D).map(k=>`<button class="tab${k===cur?' on':''}" style="background:${D[k].c[0]};color:${D[k].c[1]}" onclick="go('${k}')">${k}</button>`).join('')+'</div>';
+h+=`<section class="card"><h2>1. Match</h2><p>Tap the picture, then tap its word. <b>${md}/${n}</b></p><div class="mg"><div>`
++W.map((w,i)=>`<button class="pic${s.sel===i?' sel':''}${s.done[i]?' ok':''}" onclick="pick(${i})">${w[1]}</button>`).join('')
++'</div><div>'+s.o.map((i,j)=>`<button class="wd${s.done[i]?' ok':''}${s.bad===j?' bad':''}" onclick="ans(${j})">${W[i][0]}</button>`).join('')
++`</div></div>${md===n?'<div class="win">🎉 Great job!</div>':''}</section>`;
+h+='<section class="card"><h2>2. Put the letters in order</h2><p>Tap the letters to spell the word.</p>'
++W.map(([w,p],i)=>{const c=s.sc[i]||[];return `<div class="row${s.scOk[i]?' ok':''}${s.scBad[i]?' bad':''}"><div class="pic2">${p}</div><div class="slots">`
++[...Array(w.length)].map((_,k)=>`<button class="slot" onclick="slot(${i},${k})">${c[k]!==undefined?s.L[i][c[k]]:''}</button>`).join('')
++'</div><div class="tiles">'+s.L[i].map((l,k)=>`<button class="t" ${c.includes(k)||s.scOk[i]?'disabled':''} onclick="tile(${i},${k})">${l}</button>`).join('')
++`</div>${s.scOk[i]?'<b class="chk">✅</b>':''}</div>`}).join('')+'</section>';
+h+='<section class="card"><h2>3. Write the word</h2><p>Look at the picture and write its name.</p>'
++W.map(([w,p],i)=>`<div class="row${s.wrOk[i]?' ok':''}"><div class="pic2">${p}</div><input class="inp" autocomplete="off" autocapitalize="none" spellcheck="false" value="${s.wr[i]||''}" ${s.wrOk[i]?'disabled':''} oninput="wr(${i},this.value)">${s.wrOk[i]?'<b class="chk">✅</b>':''}</div>`).join('')
++'</section><button class="reset" onclick="reset()">↻ Start over</button>';
+document.getElementById('app').innerHTML=h}
+render();
+</script></body></html>
