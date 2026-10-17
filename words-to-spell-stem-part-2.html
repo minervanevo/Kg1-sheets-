@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Words to spell - Stem part 2</title>
+<style>body{font-family:Arial,sans-serif;background:#fff8e1;margin:0;padding:12px;text-align:center}
+h1{font-size:22px;margin:6px}.tabs button{font-size:16px;margin:3px;padding:8px 12px;border:0;border-radius:10px;background:#ffd54f}
+.tabs button.on{background:#ff9800;color:#fff}.pic{font-size:80px}.b{display:inline-block;min-width:52px;margin:4px;padding:10px;font-size:34px;font-weight:bold;border:3px solid #333;border-radius:10px;background:#fff;cursor:pointer}
+.sw{display:inline-block;width:90px;height:90px;border-radius:16px;border:3px solid #333}.msg{font-size:28px;min-height:40px}.w{font-size:34px;font-weight:bold}.sel{outline:5px solid #ff9800}.done{opacity:.3}</style></head><body>
+<h1>Words to spell - Stem part 2</h1>
+<div class="tabs"><button id="t0" onclick="go(0)">Match</button><button id="t1" onclick="go(1)">Letters</button><button id="t2" onclick="go(2)">Missing</button></div>
+<div id="app"></div><div class="msg" id="msg"></div>
+<script>
+const W=[["Mommy","👩"],["Daddy","👨"],["Yellow",'<span class="sw" style="background:#ffdd00"></span>'],["Brown",'<span class="sw" style="background:#73451a"></span>'],["Baby","👶"]];
+const app=document.getElementById("app"),msg=document.getElementById("msg");
+const sh=a=>[...a].sort(()=>Math.random()-.5);
+function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
+function ok(t){msg.textContent="⭐ "+t+" ⭐";say(t)}function no(){msg.textContent="Try again 🙂"}
+function go(m){[0,1,2].forEach(i=>document.getElementById("t"+i).className=i==m?"on":"");msg.textContent="";[match,letters,missing][m]()}
+function match(){let p=null,left=0;app.innerHTML="<p>Tap a picture, then its word</p>";const L=document.createElement("div"),R=document.createElement("div");
+W.forEach(([w,e])=>{const a=document.createElement("span");a.className="pic b";a.style.fontSize="50px";a.innerHTML=e;a.onclick=()=>{p=w;[...L.children].forEach(x=>x.classList.remove("sel"));a.classList.add("sel");a._w=w;a.dataset.w=w};a.dataset.w=w;L.append(a);left++});
+sh(W).forEach(([w])=>{const b=document.createElement("span");b.className="b";b.textContent=w;b.onclick=()=>{if(!p)return;if(p==w){ok(w);b.classList.add("done");[...L.children].find(x=>x.dataset.w==w).classList.add("done");p=null;if(--left==0)msg.textContent="⭐ Great job! ⭐"}else no()};R.append(b)});app.append(L,document.createElement("hr"),R)}
+function letters(){let i=0;const [w,e]=sh(W)[0];app.innerHTML=`<div class="pic">${e}</div><div class="w" id="ans">_ _ _</div><div id="pool"></div><p><button onclick="letters()">Next word</button></p>`;
+const ans=document.getElementById("ans");let got="";ans.textContent=w.replace(/./g,"_ ");
+const pool=document.getElementById("pool");sh(w.toLowerCase().split("")).forEach(l=>{const b=document.createElement("span");b.className="b";b.textContent=l;b.onclick=()=>{if(l==w.toLowerCase()[got.length]){got+=l;b.classList.add("done");ans.textContent=(got+"_".repeat(w.length-got.length)).split("").join(" ");if(got==w.toLowerCase())ok(w)}else no()};pool.append(b)})}
+function missing(){const [w,e]=sh(W)[0],k=Math.floor(w.length/2);app.innerHTML=`<div class="pic">${e}</div><div class="w">${w.slice(0,k)}<span style="border-bottom:4px solid #333;padding:0 14px">&nbsp;</span>${w.slice(k+1)}</div><div id="pool"></div><p><button onclick="missing()">Next word</button></p>`;
+const c=w[k].toLowerCase();let o=new Set([c]);while(o.size<4)o.add("abdeilmnorwy"[Math.floor(Math.random()*12)]);const pool=document.getElementById("pool");
+sh([...o]).forEach(l=>{const b=document.createElement("span");b.className="b";b.textContent=l;b.onclick=()=>l==c?ok(w):no();pool.append(b)})}
+go(0)
+</script></body></html>
